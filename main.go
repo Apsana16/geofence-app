@@ -1,9 +1,9 @@
 package main
 
 import (
-	// "encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -74,7 +74,6 @@ func main() {
 
 		clients[conn] = true
 		fmt.Println("🔵 WebSocket connected!")
-
 	})
 
 	// ---------------- Create Geofence ----------------
@@ -95,7 +94,6 @@ func main() {
 
 	// ---------------- Create Vehicle ----------------
 	r.POST("/vehicles", func(c *gin.Context) {
-		fmt.Println(" NEW VEHICLE API RUNNING")
 
 		var v Vehicle
 
@@ -107,7 +105,6 @@ func main() {
 		v.ID = "veh_" + v.VehicleNumber
 		v.Status = "active"
 
-		// ❌ Check duplicate
 		if _, exists := vehicles[v.ID]; exists {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Vehicle already exists"})
 			return
@@ -141,7 +138,6 @@ func main() {
 
 	// ---------------- EXIT VEHICLE ----------------
 	r.POST("/vehicles/exit", func(c *gin.Context) {
-		fmt.Println("EXIT API HIT")
 
 		var body struct {
 			VehicleID string `json:"vehicle_id"`
@@ -152,9 +148,6 @@ func main() {
 			return
 		}
 
-		fmt.Println("🚗 Exit request:", body.VehicleID)
-
-		// ❌ Check if vehicle exists
 		v, exists := vehicles[body.VehicleID]
 		if !exists {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Vehicle not found"})
@@ -165,7 +158,7 @@ func main() {
 		vehicles[body.VehicleID] = v
 		vehicleState[body.VehicleID] = "outside"
 
-		// 🔴 Send WebSocket alert
+		// WebSocket alert
 		for client := range clients {
 			client.WriteJSON(gin.H{
 				"event":      "vehicle_exit",
@@ -179,5 +172,11 @@ func main() {
 		})
 	})
 
-	r.Run(":9090")
+	// ---------------- PORT FIX (IMPORTANT) ----------------
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "10000"
+	}
+
+	r.Run(":" + port)
 }
