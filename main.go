@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -178,5 +179,6 @@ if port == "" {
     port = "10000"
 }
 
-log.Fatal(http.ListenAndServe(":"+port, nil))
+fmt.Println("RUnning on port:", port)
+r.Run(":" + port)
 }
