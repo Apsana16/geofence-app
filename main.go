@@ -174,9 +174,9 @@ func main() {
 
 	// ---------------- PORT FIX (IMPORTANT) ----------------
 	port := os.Getenv("PORT")
-	if port == "" {
-		port = "10000"
-	}
+if port == "" {
+    port = "10000"
+}
 
-	r.Run(":" + port)
+log.Fatal(http.ListenAndServe(":"+port, nil))
 }

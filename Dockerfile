@@ -1,23 +1,20 @@
-# Use official Go image
-FROM golang:1.23-alpine
+FROM golang:1.26.1-alpine AS builder
 
-# Set working directory inside container
 WORKDIR /app
 
-# Copy go.mod and go.sum first (better caching)
 COPY go.mod go.sum ./
-
-# Download dependencies
 RUN go mod download
 
-# Copy all project files
 COPY . .
 
-# Build the Go app
 RUN go build -o main .
 
-# Expose port
-EXPOSE 8081
+FROM alpine:latest
 
-# Run the application
+WORKDIR /app
+
+COPY --from=builder /app/main .
+
+EXPOSE 10000
+
 CMD ["./main"]
